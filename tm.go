@@ -82,22 +82,20 @@ func GetBB5Winner() TM {
 		1, R, 3, 1, R, 2,
 		1, R, 4, 0, L, 5,
 		1, L, 1, 1, L, 4,
-		1, R, 6, 0, L, 1}
+		1, R, 0, 0, L, 1}
 
 }
 
-type Tapable interface {
-	GetSymbol(pos int) byte
-	SetSymbol(pos int, symb byte)
-	Size() int
+const MAX_MEMORY = 40000
+
+type SimpleTape struct {
+	tape [MAX_MEMORY]byte
 }
 
-func TmStep(tm TM, tape Tapable, currState byte, currPos int, currTime int) (nextState byte, nextPos int, err error) {
-	read := tape.GetSymbol(currPos)
+func TmStep(tm TM, read byte, currState byte, currPos int, currTime int) (write byte, nextState byte, nextPos int) {
+
 	tmTransition := 6*(currState-1) + 3*read
-	write := tm[tmTransition]
-
-	tape.SetSymbol(currPos, write)
+	write = tm[tmTransition]
 
 	move := tm[tmTransition+1]
 	nextState = tm[tmTransition+2]
@@ -105,17 +103,39 @@ func TmStep(tm TM, tape Tapable, currState byte, currPos int, currTime int) (nex
 	if move == R {
 		nextPos = currPos + 1
 
-		if nextPos >= tape.Size() {
-			err = errors.New("max memory exceeded")
-		}
-
 	} else {
 		nextPos = currPos - 1
 
-		if nextPos < 0 {
-			err = errors.New("max memory exceeded")
-		}
 	}
 
-	return nextState, nextPos, err
+	return write, nextState, nextPos
+}
+
+func TmSimulate(tm TM) (int, error) {
+	currPos := MAX_MEMORY / 2
+	nextPos := currPos
+	currState := byte(1)
+	currTime := 0
+	write := byte(0)
+	var tape SimpleTape
+
+	var err error
+
+	for err == nil && currState != 0 {
+
+		if currPos < 0 || currPos >= len(tape.tape) {
+			err = errors.New("memory exceeded")
+			continue
+		}
+
+		read := tape.tape[currPos]
+
+		write, currState, nextPos = TmStep(tm, read, currState, currPos, currTime)
+
+		tape.tape[currPos] = write
+		currPos = nextPos
+		currTime += 1
+	}
+
+	return currTime, err
 }
