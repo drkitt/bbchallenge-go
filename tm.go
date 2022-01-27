@@ -2,6 +2,7 @@ package bbchallenge
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 
 	tabulate "github.com/rgeoghegan/tabulate"
@@ -61,7 +62,7 @@ func GetMachineI(db []byte, i int, hasHeader bool) (tm TM, err error) {
 	if hasHeader {
 		offset = 1
 	}
-
+	fmt.Println(offset, 30*(i+offset), 30*(i+offset+1))
 	copy(tm[:], db[30*(i+offset):30*(i+offset+1)])
 	return tm, nil
 }
