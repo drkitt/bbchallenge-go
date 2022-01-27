@@ -85,3 +85,37 @@ func GetBB5Winner() TM {
 		1, R, 6, 0, L, 1}
 
 }
+
+type Tapable interface {
+	GetSymbol(pos int) byte
+	SetSymbol(pos int, symb byte)
+	Size() int
+}
+
+func TmStep(tm TM, tape Tapable, currState byte, currPos int, currTime int) (nextState byte, nextPos int, err error) {
+	read := tape.GetSymbol(currPos)
+	tmTransition := 6*(currState-1) + 3*read
+	write := tm[tmTransition]
+
+	tape.SetSymbol(currPos, write)
+
+	move := tm[tmTransition+1]
+	nextState = tm[tmTransition+2]
+
+	if move == R {
+		nextPos = currPos + 1
+
+		if nextPos >= tape.Size() {
+			err = errors.New("max memory exceeded")
+		}
+
+	} else {
+		nextPos = currPos - 1
+
+		if nextPos < 0 {
+			err = errors.New("max memory exceeded")
+		}
+	}
+
+	return nextState, nextPos, err
+}
