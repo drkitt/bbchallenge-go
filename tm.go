@@ -53,7 +53,7 @@ func (tm TM) ToAsciiTable(nbStates byte) (toRet string) {
 
 func GetMachineI(db []byte, i int, hasHeader bool) (tm TM, err error) {
 
-	if i <= 0 || i > len(db)/30 {
+	if i < 0 || i > len(db)/30 {
 		err := errors.New("invalid db index")
 		return tm, err
 	}
