@@ -12,7 +12,12 @@ const TOTAL_UNDECIDED_SPACE = 74342035
 
 func TestDB(db []byte, withHeader bool) error {
 
-	if len(db)/30 != TOTAL_UNDECIDED {
+	offset := 0
+	if withHeader {
+		offset = 1
+	}
+
+	if len(db)/30-offset != TOTAL_UNDECIDED {
 		return fmt.Errorf("core %d != %d", len(db)/30, TOTAL_UNDECIDED)
 	} else if !withHeader {
 		return nil
