@@ -30,7 +30,7 @@ func MinI(a int, b int) int {
 // Following 3 functions are used by heuristics deciders
 
 // Equivalent of l[beginIndex::sampleStep] in python
-func SampleList(l []interface{}, beginIndex int, sampleStep int) (toReturn []interface{}) {
+func SampleList(l []int, beginIndex int, sampleStep int) (toReturn []int) {
 	for i := beginIndex; i < len(l); i += sampleStep {
 		toReturn = append(toReturn, l[i])
 	}
