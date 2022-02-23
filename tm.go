@@ -1,6 +1,7 @@
 package bbchallenge
 
 import (
+	"encoding/binary"
 	"errors"
 	"strconv"
 
@@ -64,6 +65,29 @@ func GetMachineI(db []byte, i int, hasHeader bool) (tm TM, err error) {
 
 	copy(tm[:], db[30*(i+offset):30*(i+offset+1)])
 	return tm, nil
+}
+
+func GetMachineIFromIndex(db []byte, i int, hasHeader bool, undecidedMachinesIndex []byte) (tm TM, indexInDb uint32, err error) {
+
+	if i < 0 || i > len(undecidedMachinesIndex)/4 {
+		err := errors.New("invalid index of undecided machines index")
+		return tm, 0, err
+	}
+
+	indexInDb = binary.BigEndian.Uint32(undecidedMachinesIndex[i*4 : (i+1)*4])
+
+	if indexInDb < 0 || indexInDb > uint32(len(db)/30) {
+		err := errors.New("invalid db index")
+		return tm, 0, err
+	}
+
+	offset := uint32(0)
+	if hasHeader {
+		offset = 1
+	}
+
+	copy(tm[:], db[30*(indexInDb+offset):30*(indexInDb+offset+1)])
+	return tm, indexInDb, nil
 }
 
 func GetBB5Winner() TM {
