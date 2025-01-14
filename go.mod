@@ -1,4 +1,4 @@
-module github.com/bbchallenge/bbchallenge-go
+module github.com/drkitt/bbchallenge-go
 
 go 1.16
 
