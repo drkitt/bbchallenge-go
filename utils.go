@@ -1,12 +1,15 @@
 package bbchallenge
 
 import (
+	"fmt"
 	"strings"
 
 	uuid "github.com/nu7hatch/gouuid"
 )
 
 func GetRunName() string {
+	fmt.Println("Hiiiiiiiiiii .w.")
+
 	id, _ := uuid.NewV4()
 
 	split := strings.Split(id.String(), "-")
