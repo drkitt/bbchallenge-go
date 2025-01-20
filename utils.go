@@ -2,15 +2,19 @@ package bbchallenge
 
 import (
 	"strings"
-
-	uuid "github.com/nu7hatch/gouuid"
+	"time"
 )
 
 func GetRunName() string {
-	id, _ := uuid.NewV4()
+	// I'll be running this many times with different memory limits so I
+	// changed this to make it easier to tell which run is which.
+	timestamp := time.Now().Format(time.DateTime)
 
-	split := strings.Split(id.String(), "-")
-	return "run-" + split[len(split)-1]
+	// Get rid of annoying characters
+	timestamp = strings.Replace(timestamp, " ", "_", -1)
+	timestamp = strings.Replace(timestamp, ":", "-", -1)
+
+	return "run_" + timestamp
 }
 
 func MaxI(a int, b int) int {
