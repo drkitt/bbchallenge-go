@@ -11,9 +11,9 @@ import (
 const R = 0
 const L = 1
 
-type TM [2 * 5 * 3]byte
+type LBA [2 * 5 * 3]byte
 
-func tmTransitionToStr(b1 byte, b2 byte, b3 byte) (toRet string) {
+func lbaTransitionToStr(b1 byte, b2 byte, b3 byte) (toRet string) {
 
 	if b3 == 0 {
 		return "???"
@@ -32,15 +32,15 @@ func tmTransitionToStr(b1 byte, b2 byte, b3 byte) (toRet string) {
 	return toRet
 }
 
-func (tm TM) ToAsciiTable(nbStates byte) (toRet string) {
+func (lba LBA) ToAsciiTable(nbStates byte) (toRet string) {
 
 	var table [][]string
 
 	for i := byte(0); i < nbStates; i += 1 {
 
 		table = append(table, []string{string(rune(int('A') + int(i))),
-			tmTransitionToStr(tm[6*i], tm[6*i+1], tm[6*i+2]),
-			tmTransitionToStr(tm[6*i+3], tm[6*i+4], tm[6*i+5])})
+			lbaTransitionToStr(lba[6*i], lba[6*i+1], lba[6*i+2]),
+			lbaTransitionToStr(lba[6*i+3], lba[6*i+4], lba[6*i+5])})
 	}
 
 	layout := &tabulate.Layout{Headers: []string{"-", "0", "1"}, Format: tabulate.SimpleFormat}
@@ -51,11 +51,11 @@ func (tm TM) ToAsciiTable(nbStates byte) (toRet string) {
 	return asText
 }
 
-func GetMachineI(db []byte, i int, hasHeader bool) (tm TM, err error) {
+func GetMachineI(db []byte, i int, hasHeader bool) (lba LBA, err error) {
 
 	if i < 0 || i > len(db)/30 {
 		err := errors.New("invalid db index")
-		return tm, err
+		return lba, err
 	}
 
 	offset := 0
@@ -63,22 +63,22 @@ func GetMachineI(db []byte, i int, hasHeader bool) (tm TM, err error) {
 		offset = 1
 	}
 
-	copy(tm[:], db[30*(i+offset):30*(i+offset+1)])
-	return tm, nil
+	copy(lba[:], db[30*(i+offset):30*(i+offset+1)])
+	return lba, nil
 }
 
-func GetMachineIFromIndex(db []byte, i int, hasHeader bool, undecidedMachinesIndex []byte) (tm TM, indexInDb uint32, err error) {
+func GetMachineIFromIndex(db []byte, i int, hasHeader bool, undecidedMachinesIndex []byte) (lba LBA, indexInDb uint32, err error) {
 
 	if i < 0 || i > len(undecidedMachinesIndex)/4 {
 		err := errors.New("invalid index of undecided machines index")
-		return tm, 0, err
+		return lba, 0, err
 	}
 
 	indexInDb = binary.BigEndian.Uint32(undecidedMachinesIndex[i*4 : (i+1)*4])
 
 	if indexInDb < 0 || indexInDb > uint32(len(db)/30) {
 		err := errors.New("invalid db index")
-		return tm, 0, err
+		return lba, 0, err
 	}
 
 	offset := uint32(0)
@@ -86,11 +86,11 @@ func GetMachineIFromIndex(db []byte, i int, hasHeader bool, undecidedMachinesInd
 		offset = 1
 	}
 
-	copy(tm[:], db[30*(indexInDb+offset):30*(indexInDb+offset+1)])
-	return tm, indexInDb, nil
+	copy(lba[:], db[30*(indexInDb+offset):30*(indexInDb+offset+1)])
+	return lba, indexInDb, nil
 }
 
-func GetBB5Winner() TM {
+func GetBB5Winner() LBA {
 	// +---+-----+-----+
 	// | - |  0  |  1  |
 	// +---+-----+-----+
@@ -101,7 +101,7 @@ func GetBB5Winner() TM {
 	// | E | 1RH | 0LA |
 	// +---+-----+-----+
 
-	return TM{
+	return LBA{
 		1, R, 2, 1, L, 3,
 		1, R, 3, 1, R, 2,
 		1, R, 4, 0, L, 5,
@@ -116,13 +116,13 @@ type SimpleTape struct {
 	tape [MAX_MEMORY]byte
 }
 
-func TmStep(tm TM, read byte, currState byte, currPos int, currTime int) (write byte, nextState byte, nextPos int) {
+func LbaStep(lba LBA, read byte, currState byte, currPos int, currTime int) (write byte, nextState byte, nextPos int) {
 
-	tmTransition := 6*(currState-1) + 3*read
-	write = tm[tmTransition]
+	lbaTransition := 6*(currState-1) + 3*read
+	write = lba[lbaTransition]
 
-	move := tm[tmTransition+1]
-	nextState = tm[tmTransition+2]
+	move := lba[lbaTransition+1]
+	nextState = lba[lbaTransition+2]
 
 	if move == R {
 		nextPos = currPos + 1
@@ -135,7 +135,7 @@ func TmStep(tm TM, read byte, currState byte, currPos int, currTime int) (write 
 	return write, nextState, nextPos
 }
 
-func TmSimulate(tm TM) (int, error) {
+func LbaSimulate(lba LBA) (int, error) {
 	currPos := MAX_MEMORY / 2
 	nextPos := currPos
 	currState := byte(1)
@@ -154,7 +154,7 @@ func TmSimulate(tm TM) (int, error) {
 
 		read := tape.tape[currPos]
 
-		write, currState, nextPos = TmStep(tm, read, currState, currPos, currTime)
+		write, currState, nextPos = LbaStep(lba, read, currState, currPos, currTime)
 
 		tape.tape[currPos] = write
 		currPos = nextPos
