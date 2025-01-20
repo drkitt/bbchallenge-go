@@ -43,7 +43,7 @@ func TestGetMachine(t *testing.T) {
 }
 
 func TestSimulate(t *testing.T) {
-	time, err := TmSimulate(GetBB5Winner())
+	time, err := LbaSimulate(GetBB5Winner())
 	if time != BB5 || err != nil {
 		t.Error(time, err)
 	}
