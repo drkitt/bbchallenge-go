@@ -126,10 +126,10 @@ func LbaStep(lba LBA, tapeLength int, read byte, currState byte, currPos int, cu
 
 	if move == R && currPos < tapeLength-1 {
 		nextPos = currPos + 1
-
 	} else if move == L && currPos > 0 {
 		nextPos = currPos - 1
-
+	} else {
+		nextPos = currPos
 	}
 
 	return write, nextState, nextPos
