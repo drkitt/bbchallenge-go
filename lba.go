@@ -116,7 +116,7 @@ type SimpleTape struct {
 	tape [MAX_MEMORY]byte
 }
 
-func LbaStep(lba LBA, read byte, currState byte, currPos int, currTime int) (write byte, nextState byte, nextPos int) {
+func LbaStep(lba LBA, tapeLength int, read byte, currState byte, currPos int, currTime int) (write byte, nextState byte, nextPos int) {
 
 	lbaTransition := 6*(currState-1) + 3*read
 	write = lba[lbaTransition]
@@ -124,10 +124,10 @@ func LbaStep(lba LBA, read byte, currState byte, currPos int, currTime int) (wri
 	move := lba[lbaTransition+1]
 	nextState = lba[lbaTransition+2]
 
-	if move == R {
+	if move == R && currPos < tapeLength-1 {
 		nextPos = currPos + 1
 
-	} else {
+	} else if move == L && currPos > 0 {
 		nextPos = currPos - 1
 
 	}
@@ -136,30 +136,6 @@ func LbaStep(lba LBA, read byte, currState byte, currPos int, currTime int) (wri
 }
 
 func LbaSimulate(lba LBA) (int, error) {
-	currPos := MAX_MEMORY / 2
-	nextPos := currPos
-	currState := byte(1)
-	currTime := 0
-	write := byte(0)
-	var tape SimpleTape
-
-	var err error
-
-	for err == nil && currState != 0 {
-
-		if currPos < 0 || currPos >= len(tape.tape) {
-			err = errors.New("memory exceeded")
-			continue
-		}
-
-		read := tape.tape[currPos]
-
-		write, currState, nextPos = LbaStep(lba, read, currState, currPos, currTime)
-
-		tape.tape[currPos] = write
-		currPos = nextPos
-		currTime += 1
-	}
-
-	return currTime, err
+	// You can find a non-working implementation in commit 56b00c21a5182b76c752132b2f6a63c9bdde4f35
+	return 0, errors.New("not implemented")
 }
